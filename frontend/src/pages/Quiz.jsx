@@ -175,14 +175,20 @@ function Quiz() {
             <div className="min-h-[400px]">
                {currentQ?.type === 'mcq' && (
                  <div className="grid grid-cols-1 gap-4">
-                    {currentQ.options.map((opt, i) => (
-                      <button key={i} onClick={() => handleAnswer(currentQ.id, opt)} className={`group flex items-center p-6 rounded-3xl border-2 transition text-left ${answers[currentQ.id] === opt ? 'border-indigo-600 bg-indigo-50 shadow-lg shadow-indigo-600/5' : 'border-slate-100 bg-white hover:border-slate-300'}`}>
-                         <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center mr-6 font-black text-sm transition ${answers[currentQ.id] === opt ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-200 text-slate-400'}`}>
-                           {String.fromCharCode(65 + i)}
-                         </div>
-                         <span className="text-lg font-bold text-slate-700">{opt}</span>
-                      </button>
-                    ))}
+                    {currentQ.options && currentQ.options.length > 0 && currentQ.options.some(o => o.trim() !== '') ? (
+                      currentQ.options.map((opt, i) => (
+                        <button key={i} onClick={() => handleAnswer(currentQ.id, opt)} className={`group flex items-center p-6 rounded-3xl border-2 transition text-left ${answers[currentQ.id] === opt ? 'border-indigo-600 bg-indigo-50 shadow-lg shadow-indigo-600/5' : 'border-slate-100 bg-white hover:border-slate-300'}`}>
+                           <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center mr-6 font-black text-sm transition ${answers[currentQ.id] === opt ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-200 text-slate-400'}`}>
+                             {String.fromCharCode(65 + i)}
+                           </div>
+                           <span className="text-lg font-bold text-slate-700">{opt}</span>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="p-10 text-center bg-slate-50 border-2 border-dashed border-slate-200 rounded-[40px]">
+                         <p className="font-black text-slate-400 uppercase tracking-widest text-sm">No options provided for this MCQ</p>
+                      </div>
+                    )}
                  </div>
                )}
 

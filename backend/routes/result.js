@@ -81,7 +81,25 @@ router.get('/:userId', verifyToken, async (req, res) => {
 const PDFDocument = require('pdfkit');
 const ExcelJS = require('exceljs');
 
-// Detailed Leaderboard
+// Global Rankings
+router.get('/leaderboard/all', verifyToken, async (req, res) => {
+    try {
+        const rows = await db.all(`
+            SELECT u.name, SUM(a.score) as score, SUM(a.time_taken) as time_taken, COUNT(a.id) as exams_taken
+            FROM attempts a 
+            JOIN users u ON a.user_id = u.id 
+            WHERE a.status = 'submitted'
+            GROUP BY u.id
+            ORDER BY score DESC, time_taken ASC 
+            LIMIT 50
+        `);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Detailed Leaderboard per Exam
 router.get('/leaderboard/:examId', verifyToken, async (req, res) => {
     const { examId } = req.params;
     try {

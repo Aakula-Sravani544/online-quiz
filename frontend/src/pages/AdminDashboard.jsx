@@ -4,6 +4,7 @@ import api from '../api';
 import { LogOut, Plus, Users, LayoutDashboard, Copy, BookOpen, Timer, FileSpreadsheet, Download, Search, RefreshCw, BarChart3, FileUp, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title as ChartTitle, Tooltip, Legend } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
+import DashboardAnalytics from '../components/DashboardAnalytics';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ChartTitle, Tooltip, Legend);
 
@@ -12,7 +13,7 @@ function AdminDashboard() {
   const [submissions, setSubmissions] = useState([]);
   const [students, setStudents] = useState([]);
   const [stats, setStats] = useState(null);
-  const [activeTab, setActiveTab] = useState('exams'); // 'exams', 'submissions', 'students', 'upload'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'exams', 'submissions', 'students', 'upload'
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [searchStudent, setSearchStudent] = useState('');
   
@@ -167,8 +168,11 @@ function AdminDashboard() {
           QUIZ<span className="text-indigo-400">FLOW</span>
         </div>
         <nav className="flex-1 p-4 space-y-2 text-sm font-bold">
+          <button onClick={() => setActiveTab('overview')} className={`flex items-center w-full px-4 py-3 rounded-xl transition ${activeTab === 'overview' ? 'bg-indigo-600 shadow-xl' : 'hover:bg-indigo-800'}`}>
+            <LayoutDashboard className="w-5 h-5 mr-3" /> Overview
+          </button>
           <button onClick={() => setActiveTab('exams')} className={`flex items-center w-full px-4 py-3 rounded-xl transition ${activeTab === 'exams' ? 'bg-indigo-600 shadow-xl' : 'hover:bg-indigo-800'}`}>
-            <LayoutDashboard className="w-5 h-5 mr-3" /> Exams
+            <BookOpen className="w-5 h-5 mr-3" /> Exams
           </button>
           <button onClick={() => setActiveTab('upload')} className={`flex items-center w-full px-4 py-3 rounded-xl transition ${activeTab === 'upload' ? 'bg-indigo-600 shadow-xl' : 'hover:bg-indigo-800'}`}>
             <FileUp className="w-5 h-5 mr-3" /> Upload Questions
@@ -205,6 +209,12 @@ function AdminDashboard() {
           )}
         </div>
 
+        {activeTab === 'overview' && (
+           <div className="animate-in fade-in slide-in-from-bottom-5 duration-500">
+              <DashboardAnalytics />
+           </div>
+        )}
+
         {activeTab === 'upload' && (
           <div className="space-y-10 animate-in fade-in slide-in-from-bottom-5 duration-500">
             <div className="bg-white p-10 rounded-[40px] shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -220,11 +230,19 @@ function AdminDashboard() {
                </div>
                <div>
                   <h3 className="text-xl font-black mb-4">2. Choose Excel File</h3>
-                  <label className="flex items-center justify-center px-8 py-4 bg-indigo-50 text-indigo-700 border-2 border-dashed border-indigo-200 rounded-2xl cursor-pointer hover:bg-indigo-100 transition group">
-                     <FileUp className="w-6 h-6 mr-3 group-hover:scale-110 transition" />
-                     <span className="font-black uppercase tracking-widest text-sm">{isUploading ? 'Parsing...' : 'Browse .xlsx'}</span>
-                     <input type="file" hidden accept=".xlsx" onChange={handleExcelParse} />
-                  </label>
+                  <div className="flex flex-col space-y-3">
+                    <label className="flex items-center justify-center px-8 py-4 bg-indigo-50 text-indigo-700 border-2 border-dashed border-indigo-200 rounded-2xl cursor-pointer hover:bg-indigo-100 transition group">
+                       <FileUp className="w-6 h-6 mr-3 group-hover:scale-110 transition" />
+                       <span className="font-black uppercase tracking-widest text-sm">{isUploading ? 'Parsing...' : 'Browse .xlsx'}</span>
+                       <input type="file" hidden accept=".xlsx" onChange={handleExcelParse} />
+                    </label>
+                    <a 
+                      href="http://localhost:5005/api/exam/template/questions" 
+                      className="text-[10px] font-black text-indigo-400 uppercase tracking-widest text-center hover:text-indigo-600 transition"
+                    >
+                      Download Sample Template (.xlsx)
+                    </a>
+                  </div>
                </div>
             </div>
 

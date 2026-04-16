@@ -7,6 +7,7 @@ const authRoutes = require('./routes/auth');
 const examRoutes = require('./routes/exam');
 const quizRoutes = require('./routes/quiz');
 const resultRoutes = require('./routes/result');
+const dashboardRoutes = require('./routes/dashboard');
 
 const app = express();
 const PORT = process.env.PORT || 5005;
@@ -27,6 +28,7 @@ app.use('/api', authRoutes);
 app.use('/api/exam', examRoutes);
 app.use('/api/quiz', quizRoutes);
 app.use('/api/result', resultRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 app.get('/', (req, res) => {
     res.send('Quiz Platform API is running...');

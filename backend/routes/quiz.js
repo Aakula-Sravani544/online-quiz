@@ -50,7 +50,7 @@ router.post('/autosave', verifyToken, async (req, res) => {
 router.get('/time-left/:attemptId', verifyToken, async (req, res) => {
     try {
         const row = await db.get(`
-            SELECT (strftime('%s', 'now') - strftime('%s', a.start_time)) as elapsed, e.duration 
+            SELECT (unixepoch() - unixepoch(start_time)) as elapsed, e.duration 
             FROM attempts a 
             JOIN exams e ON a.exam_id = e.id 
             WHERE a.id = ?
@@ -59,10 +59,11 @@ router.get('/time-left/:attemptId', verifyToken, async (req, res) => {
         if (!row) return res.status(404).json({ error: 'Attempt not found' });
 
         const remaining = (row.duration * 60) - row.elapsed;
-        console.log(`TIMER DEBUG: Attempt=${req.params.attemptId}, Duration=${row.duration}, Elapsed=${row.elapsed}, Remaining=${remaining}`);
+        console.log(`TIMER SYNC: ID=${req.params.attemptId}, Dur=${row.duration}, Elap=${row.elapsed}, Rem=${remaining}`);
 
         res.json({ timeLeft: Math.max(0, Math.floor(remaining)) });
     } catch (err) {
+        console.error('Timer Sync Fail:', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -95,10 +96,15 @@ router.post('/submit', verifyToken, async (req, res) => {
     const { attempt_id, answers } = req.body;
 
     try {
+        console.log(`SUBMIT DEBUG: Starting submission for attempt_id=${attempt_id}`);
         const att = await db.get('SELECT exam_id FROM attempts WHERE id = ?', [attempt_id]);
-        if (!att) return res.status(404).json({ error: 'Attempt not found' });
+        if (!att) {
+            console.error(`SUBMIT ERROR: Attempt ${attempt_id} not found`);
+            return res.status(404).json({ error: 'Attempt not found' });
+        }
 
         const questions = await db.all('SELECT id, correct_answer, marks FROM questions WHERE exam_id = ?', [att.exam_id]);
+        console.log(`SUBMIT DEBUG: Found ${questions.length} questions for exam_id=${att.exam_id}`);
 
         let totalScore = 0;
         const answersMap = answers || {};
@@ -123,10 +129,13 @@ router.post('/submit', verifyToken, async (req, res) => {
             ...detailedAnswers
         ];
 
+        console.log(`SUBMIT DEBUG: Executing batch with ${batchOps.length} ops`);
         await db.batch(batchOps);
+        console.log(`SUBMIT SUCCESS: Score=${totalScore}`);
 
         res.status(200).json({ message: 'Exam submitted', score: totalScore });
     } catch (err) {
+        console.error('SUBMIT FATAL ERROR:', err);
         res.status(500).json({ error: err.message });
     }
 });
