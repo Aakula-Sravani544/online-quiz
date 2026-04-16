@@ -50,7 +50,7 @@ router.post('/autosave', verifyToken, async (req, res) => {
 router.get('/time-left/:attemptId', verifyToken, async (req, res) => {
     try {
         const row = await db.get(`
-            SELECT (unixepoch() - unixepoch(start_time)) as elapsed, e.duration 
+            SELECT (unixepoch() - unixepoch(a.start_time)) as elapsed, e.duration 
             FROM attempts a 
             JOIN exams e ON a.exam_id = e.id 
             WHERE a.id = ?
@@ -111,8 +111,8 @@ router.post('/submit', verifyToken, async (req, res) => {
         const detailedAnswers = [];
 
         questions.forEach(q => {
-            const userAnswer = answersMap[q.id];
-            const isCorrect = userAnswer && String(userAnswer).trim().toLowerCase() === String(q.correct_answer).trim().toLowerCase();
+            const userAnswer = answersMap[q.id] === undefined ? null : answersMap[q.id];
+            const isCorrect = userAnswer !== null && String(userAnswer).trim().toLowerCase() === String(q.correct_answer).trim().toLowerCase();
             const marks = isCorrect ? q.marks : 0;
             totalScore += marks;
             detailedAnswers.push({

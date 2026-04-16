@@ -36,7 +36,7 @@ ChartJS.register(
   Filler
 );
 
-const DashboardAnalytics = () => {
+const DashboardAnalytics = ({ onNavigate }) => {
   const [stats, setStats] = useState(null);
   const [charts, setCharts] = useState(null);
   const [recent, setRecent] = useState([]);
@@ -154,10 +154,10 @@ const DashboardAnalytics = () => {
     <div className="space-y-10 mb-12">
       {/* 🚀 Top Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard icon={<FileText className="text-indigo-600" />} label="Digital Assets" value={stats?.totalExams} color="bg-indigo-50" />
-        <StatCard icon={<Users className="text-emerald-600" />} label="Verified Students" value={stats?.totalStudents} color="bg-emerald-50" />
-        <StatCard icon={<CheckCircle className="text-purple-600" />} label="Successful Log" value={stats?.totalSubmissions} color="bg-purple-50" />
-        <StatCard icon={<Activity className="text-rose-600" />} label="Live Sessions" value={stats?.activeExams} color="bg-rose-50" />
+        <StatCard onClick={() => onNavigate('exams')} icon={<FileText className="text-indigo-600" />} label="Digital Assets" value={stats?.totalExams} color="bg-indigo-50" />
+        <StatCard onClick={() => onNavigate('students')} icon={<Users className="text-emerald-600" />} label="Verified Students" value={stats?.totalStudents} color="bg-emerald-50" />
+        <StatCard onClick={() => onNavigate('submissions')} icon={<CheckCircle className="text-purple-600" />} label="Successful Log" value={stats?.totalSubmissions} color="bg-purple-50" />
+        <StatCard onClick={() => onNavigate('exams')} icon={<Activity className="text-rose-600" />} label="Live Sessions" value={stats?.activeExams} color="bg-rose-50" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -195,7 +195,7 @@ const DashboardAnalytics = () => {
             </h3>
             <div className="space-y-6">
               {recent.map((item) => (
-                <div key={item.id} className="flex items-center justify-between group">
+                <div key={item.id} className="flex items-center justify-between group cursor-pointer hover:bg-slate-50 p-2 rounded-2xl transition" onClick={() => onNavigate('submissions')}>
                   <div className="flex items-center">
                     <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-xs mr-4">
                       {item.student_name.charAt(0)}
@@ -224,16 +224,16 @@ const DashboardAnalytics = () => {
   );
 };
 
-const StatCard = ({ icon, label, value, color }) => (
-  <div className={`p-6 rounded-[35px] ${color} border border-white flex items-center space-x-6 shadow-sm transition hover:scale-105 duration-300`}>
-    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm">
+const StatCard = ({ icon, label, value, color, onClick }) => (
+  <button onClick={onClick} className={`p-6 rounded-[35px] ${color} border border-white flex items-center space-x-6 shadow-sm transition hover:scale-105 hover:shadow-xl hover:shadow-indigo-600/5 duration-300 text-left w-full group`}>
+    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition duration-500">
       {React.cloneElement(icon, { size: 28 })}
     </div>
     <div>
       <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">{label}</p>
       <h4 className="text-3xl font-black text-slate-900 tabular-nums leading-none">{value ?? 0}</h4>
     </div>
-  </div>
+  </button>
 );
 
 const ChartCard = ({ title, icon, children }) => (

@@ -16,6 +16,7 @@ function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'exams', 'submissions', 'students', 'upload'
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [searchStudent, setSearchStudent] = useState('');
+  const [selectedStudentLogs, setSelectedStudentLogs] = useState(null); // { id, name, logs: [] }
   
   // Upload State
   const [uploadPreview, setUploadPreview] = useState(null);
@@ -112,7 +113,15 @@ function AdminDashboard() {
     try {
       await api.post('/exam/admin/grant-retake', { user_id: studentId, exam_id: examId });
       fetchSubmissions();
+      if (selectedStudentLogs) fetchStudentLogs(selectedStudentLogs.id, selectedStudentLogs.name);
     } catch (err) { alert('Error granting retake'); }
+  };
+
+  const fetchStudentLogs = async (studentId, studentName) => {
+    try {
+      const res = await api.get(`/dashboard/student-logs/${studentId}`);
+      setSelectedStudentLogs({ id: studentId, name: studentName, logs: res.data });
+    } catch (err) { alert('Failed to fetch activity logs'); }
   };
 
   const handleExport = (examId, type) => {
@@ -211,7 +220,7 @@ function AdminDashboard() {
 
         {activeTab === 'overview' && (
            <div className="animate-in fade-in slide-in-from-bottom-5 duration-500">
-              <DashboardAnalytics />
+              <DashboardAnalytics onNavigate={setActiveTab} />
            </div>
         )}
 
@@ -435,7 +444,7 @@ function AdminDashboard() {
                             <td className="px-10 py-6 font-black text-slate-800">{s.name}</td>
                             <td className="px-10 py-6 font-bold text-slate-400">{s.email}</td>
                             <td className="px-10 py-6 text-right">
-                               <button className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-800 underline underline-offset-8">Activity Logs</button>
+                               <button className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-800 underline underline-offset-8" onClick={() => fetchStudentLogs(s.id, s.name)}>Activity Logs</button>
                             </td>
                          </tr>
                        ))}
@@ -486,6 +495,50 @@ function AdminDashboard() {
            </div>
         )}
       </div>
+
+      {/* 🧾 Activity Modal */}
+      {selectedStudentLogs && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-10">
+           <div className="absolute inset-0 bg-indigo-950/60 backdrop-blur-md" onClick={() => setSelectedStudentLogs(null)}></div>
+           <div className="bg-white w-full max-w-4xl rounded-[50px] shadow-2xl relative z-10 flex flex-col max-h-[80vh] overflow-hidden animate-in zoom-in-95 duration-300">
+              <div className="p-10 border-b border-slate-100 flex justify-between items-center">
+                 <div>
+                    <h2 className="text-3xl font-black text-slate-900 leading-none mb-2">{selectedStudentLogs.name}</h2>
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Global Activity Audit</p>
+                 </div>
+                 <button onClick={() => setSelectedStudentLogs(null)} className="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 hover:bg-slate-100 transition flex items-center justify-center font-black">✕</button>
+              </div>
+              <div className="flex-1 overflow-auto p-10">
+                 <div className="space-y-4">
+                    {selectedStudentLogs.logs.map((log) => (
+                      <div key={log.id} className="p-6 rounded-3xl border border-slate-100 bg-slate-50/50 flex items-center justify-between group hover:border-indigo-100 transition">
+                         <div className="flex items-center space-x-6">
+                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-white shadow-xl ${log.status === 'submitted' ? 'bg-indigo-600' : 'bg-slate-300'}`}>
+                               {log.exam_name.charAt(0)}
+                            </div>
+                            <div>
+                               <h4 className="font-black text-slate-900">{log.exam_name}</h4>
+                               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                  {log.status === 'submitted' ? `Finished: ${new Date(log.submitted_at).toLocaleString()}` : 'Session In-Progress'}
+                               </p>
+                            </div>
+                         </div>
+                         <div className="text-right">
+                            <span className={`text-xl font-black block ${log.score >= 50 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                               {log.score ?? '--'}
+                            </span>
+                            <span className="text-[10px] font-black uppercase text-slate-300 tracking-tighter italic">Final Score</span>
+                         </div>
+                      </div>
+                    ))}
+                    {selectedStudentLogs.logs.length === 0 && (
+                      <div className="py-20 text-center text-slate-300 font-black uppercase tracking-widest">No activity recorded for this student</div>
+                    )}
+                 </div>
+              </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 }

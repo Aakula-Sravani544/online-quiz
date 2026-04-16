@@ -93,4 +93,22 @@ router.get('/recent', verifyToken, async (req, res) => {
     }
 });
 
+// 4. GET /api/dashboard/student-logs/:studentId
+router.get('/student-logs/:studentId', verifyToken, async (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'Unauthorized' });
+
+    try {
+        const rows = await db.all(`
+            SELECT a.id, e.title as exam_name, a.score, a.status, a.submitted_at, a.start_time
+            FROM attempts a 
+            JOIN exams e ON a.exam_id = e.id 
+            WHERE a.user_id = ?
+            ORDER BY a.start_time DESC
+        `, [req.params.studentId]);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

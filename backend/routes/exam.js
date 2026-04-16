@@ -219,7 +219,16 @@ router.get('/admin/students', verifyAdmin, async (req, res) => {
 router.post('/admin/grant-retake', verifyAdmin, async (req, res) => {
     const { user_id, exam_id } = req.body;
     try {
-        await db.run('DELETE FROM attempts WHERE user_id = ? AND exam_id = ?', [user_id, exam_id]);
+        await db.batch([
+            {
+                sql: 'DELETE FROM answers WHERE attempt_id IN (SELECT id FROM attempts WHERE user_id = ? AND exam_id = ?)',
+                args: [user_id, exam_id]
+            },
+            {
+                sql: 'DELETE FROM attempts WHERE user_id = ? AND exam_id = ?',
+                args: [user_id, exam_id]
+            }
+        ]);
         res.json({ message: 'Retake permission granted' });
     } catch (err) {
         res.status(500).json({ error: err.message });
