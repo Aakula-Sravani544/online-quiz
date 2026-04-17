@@ -16,7 +16,8 @@ function Register() {
       await api.post('/register', { name, email, password, role });
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed');
+      const errorMsg = err.response?.data?.error || 'Registration failed';
+      setError(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
     }
   };
 
