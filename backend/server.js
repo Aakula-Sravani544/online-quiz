@@ -29,56 +29,32 @@ if (!fs.existsSync(uploadsDir)) {
     console.log('Created uploads directory at:', uploadsDir);
 }
 
-// Serve static files from the React app
-const frontendPath = path.join(__dirname, '../frontend/dist');
-console.log('Frontend Static Path:', frontendPath);
-
+// Logging middleware
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
   next();
 });
 
-app.use(cors());
+// 3. CORS Fix (IMPORTANT)
+app.use(cors({
+  origin: ["https://online-quiz-pi-ten.vercel.app", "https://online-quiz-79f9u8pm6-sravsaakula23-3401s-projects.vercel.app", "http://localhost:5173"],
+  credentials: true
+}));
+
 app.use(express.json());
 
+// 1. Backend Verification - Test Route
+app.get("/test", (req, res) => res.send("Backend working on Render"));
+
 // Routes
-app.get('/api/health', (req, res) => res.json({ status: 'ok', vercel: !!process.env.VERCEL, now: new Date().toISOString() }));
 app.use('/api', authRoutes);
 app.use('/api/exam', examRoutes);
 app.use('/api/quiz', quizRoutes);
 app.use('/api/result', resultRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
-// Only serve static files + catchall if NOT on Vercel
-// Vercel handles static serving and routing via vercel.json
-if (!process.env.VERCEL) {
-    app.use(express.static(frontendPath));
-
-    app.get(/.*/, (req, res) => {
-        if (!req.url.startsWith('/api')) {
-            const indexPath = path.join(frontendPath, 'index.html');
-            if (fs.existsSync(indexPath)) {
-                res.sendFile(indexPath);
-            } else {
-                console.error('CRITICAL: index.html not found at', indexPath);
-                res.status(500).send('Frontend build missing. Please run build script.');
-            }
-        } else {
-            res.status(404).json({ error: 'API route not found' });
-        }
-    });
-} else {
-    // On Vercel, provide a basic 404 for missing API routes
-    app.all('/api/*', (req, res) => {
-        res.status(404).json({ error: `API route ${req.method} ${req.url} not found on Vercel` });
-    });
-}
-
-// Only skip app.listen if we are on Vercel (which uses serverless functions)
-if (!process.env.VERCEL) {
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
-    });
-}
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
 
 module.exports = app;
