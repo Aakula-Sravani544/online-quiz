@@ -1,9 +1,13 @@
 const { createClient } = require('@libsql/client');
 require('dotenv').config();
 
+if (!process.env.TURSO_DATABASE_URL) {
+    console.error('CRITICAL ERROR: TURSO_DATABASE_URL is not defined!');
+}
+
 const db = createClient({
-    url: process.env.TURSO_DATABASE_URL,
-    authToken: process.env.TURSO_AUTH_TOKEN,
+    url: process.env.TURSO_DATABASE_URL || '',
+    authToken: process.env.TURSO_AUTH_TOKEN || '',
 });
 
 // Helper for single row
