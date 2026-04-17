@@ -3,6 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 const db = require('./database');
 
+const path = require('path');
 const authRoutes = require('./routes/auth');
 const examRoutes = require('./routes/exam');
 const quizRoutes = require('./routes/quiz');
@@ -27,8 +28,23 @@ app.use('/api/quiz', quizRoutes);
 app.use('/api/result', resultRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
-app.get('/', (req, res) => {
+// Serve static files from the React app
+const frontendPath = path.join(__dirname, '../frontend/dist');
+app.use(express.static(frontendPath));
+
+// API index route
+app.get('/api', (req, res) => {
     res.send('Quiz Platform API is running...');
+});
+
+// The "catchall" handler: for any request that doesn't
+// match one above, send back React's index.html file.
+app.get('*', (req, res) => {
+    if (!req.url.startsWith('/api')) {
+        res.sendFile(path.join(frontendPath, 'index.html'));
+    } else {
+        res.status(404).json({ error: 'API route not found' });
+    }
 });
 
 // Only skip app.listen if we are on Vercel (which uses serverless functions)

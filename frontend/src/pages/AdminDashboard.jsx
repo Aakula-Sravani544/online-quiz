@@ -126,7 +126,7 @@ function AdminDashboard() {
 
   const handleExport = (examId, type) => {
     const token = localStorage.getItem('token');
-    window.open(`http://localhost:5005/api/result/export/${type}/${examId}?token=${token}`, '_blank');
+    window.open(`/api/result/export/${type}/${examId}?token=${token}`, '_blank');
   };
 
   const addQuestionBox = (type) => {
@@ -246,7 +246,7 @@ function AdminDashboard() {
                        <input type="file" hidden accept=".xlsx" onChange={handleExcelParse} />
                     </label>
                     <a 
-                      href="http://localhost:5005/api/exam/template/questions" 
+                      href="/api/exam/template/questions" 
                       className="text-[10px] font-black text-indigo-400 uppercase tracking-widest text-center hover:text-indigo-600 transition"
                     >
                       Download Sample Template (.xlsx)
