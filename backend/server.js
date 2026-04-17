@@ -14,6 +14,21 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 5005;
 
+// Environment Validation
+const requiredEnv = ['JWT_SECRET', 'TURSO_DATABASE_URL', 'TURSO_AUTH_TOKEN'];
+requiredEnv.forEach(env => {
+    if (!process.env[env]) {
+        console.error(`CRITICAL: Environment variable ${env} is missing!`);
+    }
+});
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log('Created uploads directory at:', uploadsDir);
+}
+
 // Serve static files from the React app
 const frontendPath = path.join(__dirname, '../frontend/dist');
 console.log('Frontend Static Path:', frontendPath);
