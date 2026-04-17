@@ -42,34 +42,37 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+app.get('/api/health', (req, res) => res.json({ status: 'ok', vercel: !!process.env.VERCEL, now: new Date().toISOString() }));
 app.use('/api', authRoutes);
 app.use('/api/exam', examRoutes);
 app.use('/api/quiz', quizRoutes);
 app.use('/api/result', resultRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
-app.use(express.static(frontendPath));
+// Only serve static files + catchall if NOT on Vercel
+// Vercel handles static serving and routing via vercel.json
+if (!process.env.VERCEL) {
+    app.use(express.static(frontendPath));
 
-// API index route
-app.get('/api', (req, res) => {
-    res.send('Quiz Platform API is running...');
-});
-
-// The "catchall" handler: for any request that doesn't
-// match one above, send back React's index.html file.
-app.get(/.*/, (req, res) => {
-    if (!req.url.startsWith('/api')) {
-        const indexPath = path.join(frontendPath, 'index.html');
-        if (fs.existsSync(indexPath)) {
-            res.sendFile(indexPath);
+    app.get(/.*/, (req, res) => {
+        if (!req.url.startsWith('/api')) {
+            const indexPath = path.join(frontendPath, 'index.html');
+            if (fs.existsSync(indexPath)) {
+                res.sendFile(indexPath);
+            } else {
+                console.error('CRITICAL: index.html not found at', indexPath);
+                res.status(500).send('Frontend build missing. Please run build script.');
+            }
         } else {
-            console.error('CRITICAL: index.html not found at', indexPath);
-            res.status(500).send('Frontend build missing. Please run build script.');
+            res.status(404).json({ error: 'API route not found' });
         }
-    } else {
-        res.status(404).json({ error: 'API route not found' });
-    }
-});
+    });
+} else {
+    // On Vercel, provide a basic 404 for missing API routes
+    app.all('/api/*', (req, res) => {
+        res.status(404).json({ error: `API route ${req.method} ${req.url} not found on Vercel` });
+    });
+}
 
 // Only skip app.listen if we are on Vercel (which uses serverless functions)
 if (!process.env.VERCEL) {

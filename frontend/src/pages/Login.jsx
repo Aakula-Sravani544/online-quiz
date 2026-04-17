@@ -21,7 +21,8 @@ function Login() {
         navigate('/student/dashboard');
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed');
+      const errorMsg = err.response?.data?.error || 'Login failed';
+      setError(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
     }
   };
 
