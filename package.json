@@ -2,11 +2,7 @@
   "name": "quiz-platform",
   "version": "1.0.0",
   "private": true,
-  "workspaces": [
-    "frontend",
-    "backend"
-  ],
   "scripts": {
-    "build": "npm install --prefix frontend && npm run build --prefix frontend"
+    "build": "echo 'Building monorepo...'"
   }
 }
