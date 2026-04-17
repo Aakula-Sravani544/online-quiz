@@ -31,7 +31,8 @@ app.get('/', (req, res) => {
     res.send('Quiz Platform API is running...');
 });
 
-if (process.env.NODE_ENV !== 'production') {
+// Only skip app.listen if we are on Vercel (which uses serverless functions)
+if (!process.env.VERCEL) {
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
     });
