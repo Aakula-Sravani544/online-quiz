@@ -6,5 +6,17 @@
     "build": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend",
     "postinstall": "npm run build",
     "start": "cd backend && node server.js"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.17.2",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^16.4.5",
+    "exceljs": "^4.4.0",
+    "express": "^5.x",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "pdfkit": "^0.15.0",
+    "xlsx": "^0.18.5"
   }
 }
