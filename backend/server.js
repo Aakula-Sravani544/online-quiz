@@ -9,9 +9,14 @@ const examRoutes = require('./routes/exam');
 const quizRoutes = require('./routes/quiz');
 const resultRoutes = require('./routes/result');
 const dashboardRoutes = require('./routes/dashboard');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 5005;
+
+// Serve static files from the React app
+const frontendPath = path.join(__dirname, '../frontend/dist');
+console.log('Frontend Static Path:', frontendPath);
 
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
@@ -28,8 +33,6 @@ app.use('/api/quiz', quizRoutes);
 app.use('/api/result', resultRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
-// Serve static files from the React app
-const frontendPath = path.join(__dirname, '../frontend/dist');
 app.use(express.static(frontendPath));
 
 // API index route
@@ -41,7 +44,13 @@ app.get('/api', (req, res) => {
 // match one above, send back React's index.html file.
 app.get(/.*/, (req, res) => {
     if (!req.url.startsWith('/api')) {
-        res.sendFile(path.join(frontendPath, 'index.html'));
+        const indexPath = path.join(frontendPath, 'index.html');
+        if (fs.existsSync(indexPath)) {
+            res.sendFile(indexPath);
+        } else {
+            console.error('CRITICAL: index.html not found at', indexPath);
+            res.status(500).send('Frontend build missing. Please run build script.');
+        }
     } else {
         res.status(404).json({ error: 'API route not found' });
     }
