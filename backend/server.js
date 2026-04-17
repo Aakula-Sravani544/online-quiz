@@ -17,10 +17,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(cors({
-  origin: 'http://localhost:5175',
-  credentials: true
-}));
+app.use(cors());
 app.use(express.json());
 
 // Routes
@@ -34,6 +31,10 @@ app.get('/', (req, res) => {
     res.send('Quiz Platform API is running...');
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+}
+
+module.exports = app;
